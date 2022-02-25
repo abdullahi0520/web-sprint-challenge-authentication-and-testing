@@ -1,19 +1,22 @@
 const jwt = require('jsonwebtoken')
-const {jwtSecret} = require('../secrets/index')
+const JWT_SECRET = process.env.JWT_SECRET || 'daSecret'
 
-module.exports = (req, res, next) => {
+module.exports = async (req, res, next) => {
   const token = req.headers.authorization
-  if(!token){
-    next({ status: 401, message: "Token required" });
-  } else{
-    jwt.verify(token, jwtSecret, (err, decoded) => {
+  console.log('token', token)
+  if(token){
+    jwt.verify(token, JWT_SECRET, (err, decoded) => {
       if (err) {
         next({ status: 401, message: "Token invalid" });
       } else {
         req.decodedJwt = decoded;
         next();
       }
-    });
+    })
+    
+  } else { 
+    next({ status: 401, message: "Token required" });
+  
   }
   
   /*

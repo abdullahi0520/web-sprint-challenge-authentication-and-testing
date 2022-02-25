@@ -1,7 +1,7 @@
 const router = require('express').Router();
 const bcrypt = require("bcryptjs");
 const Jokes = require("../jokes/jokes-model");
-const { BCRYPT_ROUNDS } = require("../secrets/index");
+
 const {
   checkCredentials, 
   checkUsernameExists
@@ -11,10 +11,10 @@ const makeToken = require("../auth/token-builder");
 router.post('/register', checkCredentials, checkUsernameExists , async (req, res, next) => {
   const { username, password } = req.body;
   try {
-    const hash = bcrypt.hashSync(password, BCRYPT_ROUNDS);
+    const hash = bcrypt.hashSync(password, 8);
     const newUser = { username, password: hash };
     const addedUser = await Jokes.add(newUser);
-    res.status(200).json({ message: `Welcome, ${addedUser.username}` });
+    res.status(201).json({id: addedUser.id, username: addedUser.username, password: addedUser.password});
   } catch (err) {
     next(err);
   }
@@ -49,9 +49,10 @@ router.post('/login', checkCredentials, (req, res, next) => {
   let { username, password } = req.body;
   Jokes.findBy({ username })
   .then(([user]) => {
-    if (bcrypt.compareSync(password, user.password)) {
+    if (user && bcrypt.compareSync(password, user.password)) {
       const token = makeToken(user);
-      res.status(200).json({ message: `${user.username} is back!`, token });
+      res.status(200).json({ "message": `${user.username} is back!`, token });
+      next()
     } else {
       next({ status: 401, message: "invalid credentials" });
     }

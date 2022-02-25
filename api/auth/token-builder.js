@@ -1,5 +1,6 @@
 const jwt = require('jsonwebtoken')
-const { JWT_SECRET } = require('../secrets/index')
+
+const JWT_SECRET = process.env.JWT_SECRET || 'daSecret'
 
 function tokenBuilder(user) {
     const payload = {
@@ -9,7 +10,7 @@ function tokenBuilder(user) {
     const options = {
       expiresIn: '1d',
     }
-    const token = jwt.sign(payload, JWT_SECRET, options)
+    const token = jwt.sign(payload,JWT_SECRET, options)
   
     return token
   }
